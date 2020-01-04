@@ -5,6 +5,7 @@
 
 #include "maskoperators.h"
 #include "segmentfiller.h"
+#include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 
@@ -42,9 +43,8 @@ cv::Mat ups_segmentate(cv::Mat src) {
     
     cv::Mat hsvsrc(src.rows, src.cols, CV_8UC3);
     
+    // Conversion to HSV
     cv::cvtColor(src, hsvsrc, cv::COLOR_BGR2HSV);
-    
-    cv::imshow("HSV", hsvsrc);
     cv::Mat res(src.rows, src.cols, CV_8UC1);
     
     CV_Assert(src.depth() == CV_8U);
@@ -67,6 +67,7 @@ cv::Mat ups_segmentate(cv::Mat src) {
             //H +0
             //S +1
             //V +2
+            // Segmentation color condition
             if (p[j*3] >= 9 && p[j*3] <= 28 // Yellow-Orange Hue
                 && p[j*3+1] > 40 // Quite saturated
                 && p[j*3+2] > 130) // Bright color
