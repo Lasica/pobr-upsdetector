@@ -17,6 +17,11 @@ public:
     Coord x, y;
     Point();
     Point(Coord x_, Coord y_);
+    Point operator+(Point other) { return Point(x+other.x,  y+other.y); }
+    Point operator-(Point other) { return Point(x-other.x,  y-other.y); }
+    Point operator-() { return Point(-x,  -y); }
+    Point operator/(Coord scalar) { return Point(x/scalar,  y/scalar); }
+    Point operator*(Coord scalar) { return Point(x*scalar,  y*scalar); }
 };
 
 Point::Point() {
@@ -45,6 +50,9 @@ public:
     Segment(cv::Mat o, Coord ox, Coord oy);
     inline void add_point(Coord x, Coord y);
     friend ostream& operator<<(ostream& ostr, const Segment& seg);
+    MomentType get_area() { return moments[0][0]; }
+    Point get_mass_center() { return Point((moments[0][0]/2 + moments[1][0])/moments[0][0],  (moments[0][0]/2 + moments[0][1])/moments[0][0]); }
+    Point get_bbox_center() { return (start+end)/2; }
 };
 
 
@@ -69,7 +77,7 @@ inline void Segment::add_point(Coord x, Coord y) {
 
 
 Segment::Segment(cv::Mat o, Coord ox, Coord oy) : origin(o) {
-    memset(moments, 0, sizeof(MomentType)*12);
+    memset(moments, 0, sizeof(MomentType)*16);
     start = end = sample = Point(ox, oy);
 }
 
@@ -129,9 +137,10 @@ void SegmentFiller::operator()(Coord x, Coord y) {
 }
 
 
-void separate_segments(const cv::Mat &src, vector<Segment> &container) {
+int separate_segments(const cv::Mat &src, vector<Segment> &container,  int tresh = 16) {
     int nRows = src.rows;
     int nCols = src.cols;
+    int discarded_tresh = 0;
     unsigned char *pvis;
     
     cv::Mat visited = src.clone();
@@ -145,10 +154,14 @@ void separate_segments(const cv::Mat &src, vector<Segment> &container) {
                 Segment s = Segment(src, i, j);
                 SegmentFiller sfm = SegmentFiller(visited, s);
                 sfm(i, j);
-                container.push_back(s);
+                if (s.get_area() >= tresh)
+                    container.push_back(s);
+                else
+                    discarded_tresh++;
             }
         }
     }
+    return discarded_tresh;
 }
 
 
@@ -210,6 +223,7 @@ int main(int argc, char **argv) {
     char path[100];
     
     vector<Segment> segments;
+    int discarded_segments = 0;
     
     for(int i=0; i<n_samples; ++i) {
         sprintf(path, "../../%s/sample%d.png", dir.c_str(), i+1);
@@ -222,23 +236,25 @@ int main(int argc, char **argv) {
         }
         cv::Mat image = cv::imread(path, cv::IMREAD_COLOR);
         cv::Mat segmentated_image_mask = ups_segmentate(image);
-        separate_segments(segmentated_image_mask, segments);
+        discarded_segments +=  separate_segments(segmentated_image_mask, segments);
+        cout << "Found segments: \n";
+        int k = 0;
+        for( auto &s : segments ) {
+            cout << k++ << " " <<  s;
+            cout << " Moments: ";
+            for (int l = 0; l < 4; ++l) {
+                for (int j = 0; j < 4; ++j)
+                    cout <<  s.moments[l][j] <<  " ";
+                
+            }cout <<  endl;
+        } segments.clear();
         
         cv::imshow(win1, image);
         cv::imshow(win3, segmentated_image_mask);
         cv::waitKey(0);
     }
     
-    cout << "Found segments: \n";
-    for( auto &s : segments ) {
-        cout << s << endl;
-        cout << "Moments: " << endl;
-        for (int i = 0; i < 4; ++i) {
-            for (int j = 0; j < 4; ++j)
-                cout <<  s.moments[i][j] <<  " ";
-            cout <<  endl;
-        }
-    }
+
     cv::waitKey(5000);
     return 0;
 }
