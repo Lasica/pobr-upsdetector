@@ -13,7 +13,7 @@ SegmentFiller::SegmentFiller(cv::Mat &vm, Segment &s) : segment(s) {
     
 void SegmentFiller::operator()(Coord x, Coord y) {
     // Process the pixel as segment fragment
-    segment.add_point(x, y);
+    segment.addPoint(x, y);
     *(mask_ptr + n_cols * x + y) = 0;
     for(int i=0; i < 4; ++i) {
         const Coord new_x = x_translation[i] + x;

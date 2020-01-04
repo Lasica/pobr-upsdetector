@@ -12,7 +12,8 @@ using std::ostream;
 /**
  * @todo write docs
  */
-typedef long long MomentType;
+typedef long long BasicMomentType;
+typedef double MomentType;
 typedef int Coord;
 
 const Coord x_translation[] = {-1, +1,  0,  0};

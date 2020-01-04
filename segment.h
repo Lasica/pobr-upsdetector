@@ -19,16 +19,20 @@ public:
     Point start;
     Point end;
     Point sample;
-    MomentType moments[4][4];
+    BasicMomentType m[4][4]; // Basic moments
+    MomentType M[4][4]; // Central moments
 //     int circumference;
     
-    void update_moments(Coord x, Coord y);
+    void updateMoments(Coord x, Coord y);
+    void updateMomentsCentralMoments();
+    MomentType getIMCoeff(short n);
+    
     Segment(cv::Mat o, Coord ox, Coord oy);
-    void add_point(Coord x, Coord y);
+    void addPoint(Coord x, Coord y);
     friend ostream& operator<<(ostream& ostr, const Segment& seg);
-    MomentType get_area() { return moments[0][0]; }
-    Point get_mass_center() { return Point((moments[0][0]/2 + moments[1][0])/moments[0][0],  (moments[0][0]/2 + moments[0][1])/moments[0][0]); }
-    Point get_bbox_center() { return (start+end)/2; }
+    BasicMomentType getArea() { return m[0][0]; }
+    Point getMassCenter() { return Point((m[0][0]/2 + m[1][0])/m[0][0],  (m[0][0]/2 + m[0][1])/m[0][0]); }
+    Point getBboxCenter() { return (start+end)/2; }
 };
 
 #endif // SEGMENT_H
