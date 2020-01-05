@@ -38,3 +38,11 @@ target_link_libraries(upsdetector
     ${OpenCV_LIBRARIES}
 )
 install(TARGETS upsdetector RUNTIME DESTINATION bin)
+
+add_executable(showsegments showsegments.cpp)
+target_link_libraries(showsegments
+    PUBLIC
+    upsdetectorlib
+    ${OpenCV_LIBRARIES}
+)
+install(TARGETS showsegments RUNTIME DESTINATION bin)

@@ -69,6 +69,10 @@ void Segment::updateMomentsCentralMoments() {
 MomentType Segment::getIMCoeff(short n) {
     MomentType M3012 = M[3][0] + M[1][2];
     MomentType M2103 = M[2][1] + M[0][3];
+
+    if(static_cast<MomentType>(m[0][0]) != M[0][0])
+        updateMomentsCentralMoments();
+
     switch(n) {
         case 1:
             // (M20 + M02) / m00^2
