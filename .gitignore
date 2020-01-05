@@ -1,2 +1,4 @@
 build
 .kdev*
+.kdev4
+upsdetector.kdev4
