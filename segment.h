@@ -6,7 +6,7 @@
 #ifndef SEGMENT_H
 #define SEGMENT_H
 #include "point.h"
-#include "configuartion.h"
+#include "configuration.h"
 #include <opencv2/core/core.hpp>
 
 
@@ -26,7 +26,7 @@ public:
     void updateMoments(Coord x, Coord y);
     void updateMomentsCentralMoments();
     MomentType getIMCoeff(short n);
-    
+
     Segment(cv::Mat o, Coord ox, Coord oy);
     void addPoint(Coord x, Coord y);
     friend ostream& operator<<(ostream& ostr, const Segment& seg);

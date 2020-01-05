@@ -5,7 +5,7 @@
 
 #ifndef POINT_H
 #define POINT_H
-#include "configuartion.h"
+#include "configuration.h"
 
 /**
  * @todo write docs

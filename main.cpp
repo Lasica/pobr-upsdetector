@@ -4,7 +4,7 @@
 #include <opencv2/imgproc.hpp>
 #include <cstdio>
 #include <fstream> 
-#include "configuartion.h"
+#include "configuration.h"
 #include "point.h"
 #include "segment.h"
 #include "segmentfiller.h"
