@@ -12,7 +12,7 @@
  * @todo write docs
  */
 
-int separate_segments(const cv::Mat &src, std::vector<Segment> &container,  int tresh=16);
+int separate_segments(const cv::Mat &src, std::vector<Segment> &container,  int tresh=32);
 cv::Mat ups_segmentate(cv::Mat src);
 
 

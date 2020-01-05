@@ -65,7 +65,6 @@ void Segment::updateMomentsCentralMoments() {
     M[0][3] = m[0][3] - 3*m[0][2]*cy + 2*m[0][1]*cy*cy;
 }
 
-
 MomentType Segment::getIMCoeff(short n) {
     MomentType M3012 = M[3][0] + M[1][2];
     MomentType M2103 = M[2][1] + M[0][3];
