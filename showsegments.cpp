@@ -4,6 +4,7 @@
  */
 
 #include <iostream>
+#include <iomanip>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc.hpp>
@@ -24,10 +25,22 @@ bool check_for_string(const int n, char ** argv, char const* str) {
     return result;
 }
 
+char const * get_basename(char const *path) {
+    int n = strlen(path);
+    while(n--) {
+        if(path[n] == '/')
+            break;
+    }
+    if(n < 0)
+        return path;
+    else
+        return path+n+1;
+}
+
 int main(int argc, char **argv) {
 
     if(check_for_string(argc, argv, "-h") || check_for_string(argc, argv, "--help") || argc < 2) {
-        cout << "Usage: <command> [options] <path for processing>\nOptions: \n-d,--debug - for extra info\n-m,--mask - treat input image as a mask to segmentate" << endl;
+        cout << "Usage: <command> [options] <path for processing>\nOptions: \n\t-d,--debug - for extra info\n\t-m,--mask - treat input image as a mask to segmentate\n\t-s,--source - for displaying image path as source\n\t-c,--central - for displaying non-zero central moments\n\t-t,--test compare values with opencv builtin HuMoments, requires --debug\n\t-r,--header - display in first row the header for printed values" << endl;
         return 0;
     }
 
@@ -39,8 +52,13 @@ int main(int argc, char **argv) {
         return -1;
     }
 
-    bool debug = check_for_string(argc, argv, "-d") || check_for_string(argc, argv, "--debug");
-    bool mask_as_input = check_for_string(argc, argv, "-m") || check_for_string(argc, argv, "--mask");
+    bool debug =            check_for_string(argc, argv, "-d") || check_for_string(argc, argv, "--debug");
+    bool mask_as_input =    check_for_string(argc, argv, "-m") || check_for_string(argc, argv, "--mask");
+    bool display_source =   check_for_string(argc, argv, "-s") || check_for_string(argc, argv, "--source");
+    bool display_central =  check_for_string(argc, argv, "-c") || check_for_string(argc, argv, "--central");
+    bool display_header =  check_for_string(argc, argv, "-r") || check_for_string(argc, argv, "--header");
+//     bool display_basic =    check_for_string(argc, argv, "-b") || check_for_string(argc, argv, "--basic");
+    bool test =             check_for_string(argc, argv, "-t") || check_for_string(argc, argv, "--test");
 
     vector<Segment> segments;
     int discarded_segments = 0;
@@ -60,22 +78,62 @@ int main(int argc, char **argv) {
 
     // Displaying segmentation results
     if(debug) cout << "Found segments: \n";
+//     if(debug) cout << std::setw(14);
+    cout << std::setprecision(12);
+    cout.setf(std::ios_base::scientific, std::ios_base::showpos);
+//     std::ios printState(nullptr);
+//     printState.copyfmt(std::cout);
+    char const *basename = get_basename(argv[argc-1]);
     int k = 0;
+
+    // Tables for non-zero central moments values
+    int a[] = {0, 1, 2, 0, 2, 1, 3, 0};
+    int b[] = {0, 1, 0, 2, 1, 2, 0, 3};
+    constexpr size_t central_moments_num = sizeof(a)/sizeof(int);
+    if(display_header) {
+        if(display_source) cout << "sourcefile " << "n-th_segment ";
+        if(display_central) for(int i=0; i<central_moments_num; ++i) cout << "M" << a[i] << b[i] << " ";
+        for(int i=0; i<11; ++i) cout << "M" << i << " ";
+        cout << endl;
+    }
     for( auto &s : segments ) {
+        if(display_source) cout << basename << " " << k++ << " ";
+        if(debug) cout << s << endl;
         if(debug) {
-            cout << k++ << " " <<  s;
-            cout << " Moments: ";
+            cout << "Basic moments: " << endl;
             for (int l = 0; l < 4; ++l) {
                 for (int j = 0; j < 4; ++j)
                     cout <<  s.m[l][j] <<  " ";
             } cout <<  endl;
         }
-        if(debug) cout << " Invariants: ";
-        for(int i=1; i<=10; ++i)
-            cout << s.getIMCoeff(i) << " ";
+        if(display_central) {
+            s.updateMomentsCentralMoments();
+            if(debug) cout << "Central moments: \n";
+            for (int i=0; i<central_moments_num; ++i)
+                cout  << s.M[a[i]][b[i]] << " ";
+        }
+        if(debug) cout << " Invariants: " << endl;
+        for(int i=0; i<=9; ++i)
+            cout  << s.getIMCoeff(i) << " ";
         cout << endl;
     }
-    segments.clear();
+
+    if(test && debug) {
+        cout << "Library calculated HuMoments\n";
+        // Calculate Moments
+        cv::Moments moments = cv::moments(segmentated_image_mask, false);
+
+        // Calculate Hu Moments
+        double huMoments[7];
+        cv::HuMoments(moments, huMoments);
+        for(int i=0; i<7; ++i)
+            cout  << huMoments[i] << " ";
+        cout << endl;
+        cout << "Difference between HuMoments and invariants of 1st segment:\n";
+        for(int i=0; i<7; ++i)
+            cout  << huMoments[i]-segments[0].getIMCoeff(i) << " ";
+        cout << endl;
+    }
     if(debug) cout << "Discarded segments = " << discarded_segments << endl;
     discarded_segments = 0;
 
