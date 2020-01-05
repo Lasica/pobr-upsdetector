@@ -12,7 +12,7 @@ ostream& operator<<(ostream& ostr, const Segment& seg) {
 }
 
 
-void Segment::addPoint(Coord x, Coord y) {
+void Segment::addPoint(Coord x, Coord y, BasicMomentType f) {
     if (x > end.x)
         end.x = x;
     else if (x < start.x)
@@ -23,7 +23,7 @@ void Segment::addPoint(Coord x, Coord y) {
     else if (y < start.y)
         start.y = y;
 
-    updateMoments(x, y);
+    updateMoments(x, y, f);
 }
 
 
@@ -34,27 +34,27 @@ Segment::Segment(cv::Mat o, Coord ox, Coord oy) : origin(o) {
 }
 
 
-void Segment::updateMoments(Coord x, Coord y) {
-    m[0][0] += 1;
-    m[1][0] += x;
-    m[0][1] += y;
-    m[1][1] += x*y;
+void Segment::updateMoments(Coord x, Coord y, BasicMomentType f) {
+    m[0][0] += 1*f;
+    m[1][0] += x*f;
+    m[0][1] += y*f;
+    m[1][1] += x*y*f;
     int xx = x*static_cast<int>(x);
     int yy = y*static_cast<int>(y);
-    m[2][0] += xx;
-    m[2][1] += xx*y;
-    m[1][2] += x*yy;
-    m[0][2] += yy;
-    m[3][0] += xx*x;
-    m[0][3] += yy*y;
+    m[2][0] += xx*f;
+    m[2][1] += xx*y*f;
+    m[1][2] += x*yy*f;
+    m[0][2] += yy*f;
+    m[3][0] += xx*x*f;
+    m[0][3] += yy*y*f;
 }
 
 
 void Segment::updateMomentsCentralMoments() {
     M[0][0] = m[0][0];
     MomentType cx, cy;
-    cx = m[1][0] / static_cast<MomentType>(m[0][0]);
-    cy = m[0][1] / static_cast<MomentType>(m[0][0]);
+    cx = m[1][0] / M[0][0];
+    cy = m[0][1] / M[0][0];
     M[0][1] = M[1][0] = 0;
     M[1][1] = m[1][1] - m[1][0]*m[0][1] / M[0][0];
     M[2][0] = m[2][0] - m[1][0]*m[1][0] / M[0][0];
@@ -65,6 +65,11 @@ void Segment::updateMomentsCentralMoments() {
     M[0][3] = m[0][3] - 3*m[0][2]*cy + 2*m[0][1]*cy*cy;
 }
 
+/*!
+ * Function calculating n-th moment invariant. Invariant numbers 0-6 are the same as in OpenCV, based on:
+ * Analysis of Hu’s Moment Invariants on Image Scaling and Rotation, Zhihu Huang, Jinsong Leng, Edith Cowan University, 2010
+ * Invariant numbers 7-10 are invariants 7-10 from other source
+ */
 MomentType Segment::getIMCoeff(short n) {
     MomentType M3012 = M[3][0] + M[1][2];
     MomentType M2103 = M[2][1] + M[0][3];
@@ -73,32 +78,38 @@ MomentType Segment::getIMCoeff(short n) {
         updateMomentsCentralMoments();
 
     switch(n) {
-        case 1:
+        case 0:
             // (M20 + M02) / m00^2
             return (M[2][0] + M[0][2]) / pow(M[0][0], 2);
-        case 2:
+        case 1:
             // [(M20 - M02)^2 + 4*M11^2] / m00^4
-            return (M[2][0] + M[0][2]) / pow(M[0][0], 4);
-        case 3:
+            return (pow(M[2][0] - M[0][2], 2) + 4*pow(M[1][1], 2)) / pow(M[0][0], 4);
+        case 2:
             // [(M30 - 3M12)^2 + (3M21 - M03)^2] / m00^5
             return (
                 pow(M[3][0] - 3*M[1][2], 2) + pow(3*M[2][1] - M[0][3], 2)
             ) / pow(M[0][0], 5);
-        case 4:
+        case 3:
             // [(M30 + M12)^2 + (M21 + M03)^2] / m00^5
             return (pow(M3012, 2) + pow(M2103, 2)) / pow(M[0][0], 5);
-        case 5:
-            // {(M30 - 3M12)(M30 + M12)*[(M30 + M12)^2 - 3(M21 + M03)^2] + (3M21 - M03)(M21 + M03)[3*(M30 + M12)^2 - (M21 + M03)^2]} / M00^10
+        case 4:
+            // {(M30 - 3M12)(M30 + M12)*[(M30 + M12)^2 - 3(M21 + M03)^2] + (3M21 - M03)(M21 + M03)[3*(M30 + M12)^2 - (M21 + M03)^2]} / M00^100
             return (
                 (  M[3][0] - 3*M[1][2])*(M3012)*(  pow(M3012, 2) - 3*pow(M2103, 2)) +
                 (3*M[2][1] -   M[0][3])*(M2103)*(3*pow(M3012, 2) -   pow(M2103, 2))
             ) / pow(M[0][0], 10);
-        case 6:
+        case 5:
             // {(M20 - M02) * [(M30 + M12)^2 - (M21 + M03)^2] + 4*M11*(M30 + M12)*(M21 + M03)} / M00^7
             return (
                 (M[2][0] - M[0][2]) * (pow((M3012), 2) - pow(M2103, 2)) +
                 4*M[1][1]*(M3012)*(M2103)
             ) / pow(M[0][0], 7);
+        case 6:
+            // {(3M21 - M03)*(M30 + M12)*[(M30 + M12)^2 - 3(M21 + M03)^2] - (M30 - 3M12)(M21 + M03)[3*(M30 + M12)^2 - (M21 + M03)^2]} / M00^100
+            return (
+                (3*M[2][1] -   M[0][3])*(M3012)*(  pow(M3012, 2) - 3*pow(M2103, 2)) -
+                (  M[3][0] - 3*M[1][2])*(M2103)*(3*pow(M3012, 2) -   pow(M2103, 2))
+            ) / pow(M[0][0], 10);
         case 7:
             // (M20*M02 - M11^2) / M00^4
             return (M[2][0]*M[0][2] - pow(M[1][1], 2)) / pow(M[0][0], 4);

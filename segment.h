@@ -23,12 +23,12 @@ public:
     MomentType M[4][4]; // Central moments
 //     int circumference;
     
-    void updateMoments(Coord x, Coord y);
+    void updateMoments(Coord x, Coord y, BasicMomentType f);
     void updateMomentsCentralMoments();
     MomentType getIMCoeff(short n);
 
     Segment(cv::Mat o, Coord ox, Coord oy);
-    void addPoint(Coord x, Coord y);
+    void addPoint(Coord x, Coord y, BasicMomentType f);
     friend ostream& operator<<(ostream& ostr, const Segment& seg);
     BasicMomentType getArea() { return m[0][0]; }
     Point getMassCenter() { return Point((m[0][0]/2 + m[1][0])/m[0][0],  (m[0][0]/2 + m[0][1])/m[0][0]); }

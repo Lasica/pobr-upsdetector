@@ -27,8 +27,9 @@ int separate_segments(const cv::Mat &src, std::vector<Segment> &container,  int 
                 Segment s = Segment(src, i, j);
                 SegmentFiller sfm = SegmentFiller(visited, s);
                 sfm(i, j);
-                if (s.getArea() >= tresh)
+                if (s.getArea() >= tresh) {
                     container.push_back(s);
+                }
                 else
                     discarded_tresh++;
             }
