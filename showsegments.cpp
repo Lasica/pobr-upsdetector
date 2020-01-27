@@ -93,7 +93,7 @@ int main(int argc, char **argv) {
     if(display_header) {
         if(display_source) cout << "sourcefile " << "n-th_segment ";
         if(display_central) for(int i=0; i<central_moments_num; ++i) cout << "M" << a[i] << b[i] << " ";
-        for(int i=0; i<11; ++i) cout << "M" << i << " ";
+        for(int i=0; i<10; ++i) cout << "M" << i << " ";
         cout << endl;
     }
     for( auto &s : segments ) {
