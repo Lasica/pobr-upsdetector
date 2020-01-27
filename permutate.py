@@ -11,7 +11,7 @@ def main():
     parser.add_argument('--outbase', '-O', help='output filename base', default='perm')
     parser.add_argument('--rotate-steps', '-r', help='rotation steps', type=int, default=8)
     parser.add_argument('--scale-steps', '-s', help='scale steps', type=int, default=2)
-    parser.add_argument('--scale-base', '-S', help='scale base', type=int, default=2)
+    parser.add_argument('--scale-base', '-S', help='scale base', type=float, default=2)
 
     args = parser.parse_args()
 
