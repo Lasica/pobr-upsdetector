@@ -228,9 +228,16 @@ int main(int argc, char **argv) {
                         cout << std::setprecision(2) << order[k].second->getIMCoeff(j) << " ";
                     } 
                     cout << endl;
+                    cout << order[k].second->start << order[k].second->end << endl;
                 }
+        
+                cv::rectangle(image, cv::Point(order[0].second->start.x, order[0].second->start.y), cv::Point(order[0].second->end.x, order[0].second->end.y), cv::Scalar(0, 80*i, 255 - 80*i));
             }
-            
+        }
+        if(debug && output_mask) {
+            std::string output_file = input_file;
+            output_file.insert(output_file.length()-4, "_detected");
+            cv::imwrite(output_file.c_str(), image);
         }
     }
     

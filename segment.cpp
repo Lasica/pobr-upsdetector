@@ -15,13 +15,14 @@ ostream& operator<<(ostream& ostr, const Segment& seg) {
 void Segment::addPoint(Coord x, Coord y, BasicMomentType f) {
     if (x > end.x)
         end.x = x;
-    else if (x < start.x)
-        start.x = x;
-
     if (y > end.y)
         end.y = y;
-    else if (y < start.y)
+
+    if (x < start.x)
+        start.x = x;
+    if (y < start.y)
         start.y = y;
+
 
     updateMoments(x, y, f);
 }

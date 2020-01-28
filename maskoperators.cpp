@@ -27,7 +27,7 @@ int separate_segments(const cv::Mat &src, std::vector<Segment> &container,  int 
         for (int j = 0; j < nCols; ++j) {
             
             if(*(pvis + i*nCols + j) > 0) {
-                Segment s = Segment(src, i, j);
+                Segment s = Segment(src, j, i);
                 SegmentFiller sfm = SegmentFiller(visited, s);
                 sfm(j, i);
                 if (s.getArea() >= tresh) {

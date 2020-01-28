@@ -8,6 +8,7 @@ SegmentFiller::SegmentFiller(cv::Mat &vm, Segment &s) : segment(s) {
     mask_ptr = vm.ptr<unsigned char>(0);
     n_rows = vm.rows;
     n_cols = vm.cols;
+    printf("%d %d\n", n_rows, n_cols);
 }
 
     
