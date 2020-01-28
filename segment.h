@@ -21,7 +21,7 @@ public:
     Point sample;
     BasicMomentType m[4][4]; // Basic moments
     MomentType M[4][4]; // Central moments
-//     int circumference;
+    int circumference;
     
     void updateMoments(Coord x, Coord y, BasicMomentType f);
     void updateMomentsCentralMoments();

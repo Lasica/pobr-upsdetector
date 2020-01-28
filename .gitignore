@@ -1,4 +1,7 @@
 build
+*.csv
 .kdev*
-.kdev4
+*.kdev4
+samples*
+.~lock*
 upsdetector.kdev4

@@ -31,6 +31,7 @@ Segment::Segment(cv::Mat o, Coord ox, Coord oy) : origin(o) {
     memset(m, 0, sizeof(BasicMomentType)*16);
     memset(M, 0, sizeof(MomentType)*16);
     start = end = sample = Point(ox, oy);
+    circumference = 0;
 }
 
 
@@ -39,8 +40,8 @@ void Segment::updateMoments(Coord x, Coord y, BasicMomentType f) {
     m[1][0] += x*f;
     m[0][1] += y*f;
     m[1][1] += x*y*f;
-    int xx = x*static_cast<int>(x);
-    int yy = y*static_cast<int>(y);
+    BasicMomentType xx = x*static_cast<BasicMomentType>(x);
+    BasicMomentType yy = y*static_cast<BasicMomentType>(y);
     m[2][0] += xx*f;
     m[2][1] += xx*y*f;
     m[1][2] += x*yy*f;
@@ -132,6 +133,9 @@ MomentType Segment::getIMCoeff(short n) {
                 pow(M[3][0]*M[0][3] - M[1][2]*M[2][1], 2) -
                 4*(M[3][0]*M[1][2] - pow(M[2][1], 2)) * (M[0][3]*M[2][1] - M[1][2])
             ) / pow(M[0][0], 10);
+        case 11:
+            // Malinowska coefficient 
+            return static_cast<double>(circumference)/(2*sqrtf(M_PI*m[0][0]/255)) - 1;
         default:
             break;
     }

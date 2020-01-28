@@ -19,6 +19,7 @@ add_library(upsdetectorlib OBJECT
     point.cpp
     segment.cpp
     segmentfiller.cpp
+    preprocessing.cpp
 )
 # target_include_directories(upsdetectorlib
 #     PUBLIC
@@ -31,13 +32,13 @@ target_link_libraries(upsdetectorlib
 ###\PROJECT LIBRARY ##########################################################
 
 
-add_executable(upsdetector main.cpp)
-target_link_libraries(upsdetector
+add_executable(demo demo.cpp)
+target_link_libraries(demo
     PUBLIC
     upsdetectorlib
     ${OpenCV_LIBRARIES}
 )
-install(TARGETS upsdetector RUNTIME DESTINATION bin)
+install(TARGETS demo RUNTIME DESTINATION bin)
 
 add_executable(showsegments showsegments.cpp)
 target_link_libraries(showsegments

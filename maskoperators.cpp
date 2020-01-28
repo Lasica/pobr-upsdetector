@@ -19,6 +19,9 @@ int separate_segments(const cv::Mat &src, std::vector<Segment> &container,  int 
     cv::Mat visited = src.clone();
     pvis = visited.ptr<unsigned char>(0);
     
+    assert( src.isContinuous() );
+    assert( visited.isContinuous() );
+
     for(int i = 0; i < nRows; ++i) {
         
         for (int j = 0; j < nCols; ++j) {
@@ -26,7 +29,7 @@ int separate_segments(const cv::Mat &src, std::vector<Segment> &container,  int 
             if(*(pvis + i*nCols + j) > 0) {
                 Segment s = Segment(src, i, j);
                 SegmentFiller sfm = SegmentFiller(visited, s);
-                sfm(i, j);
+                sfm(j, i);
                 if (s.getArea() >= tresh) {
                     container.push_back(s);
                 }

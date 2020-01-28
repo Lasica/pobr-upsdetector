@@ -12,7 +12,7 @@ using std::ostream;
 /**
  * @todo write docs
  */
-typedef long long BasicMomentType;
+typedef double BasicMomentType;
 typedef double MomentType;
 typedef int Coord;
 
