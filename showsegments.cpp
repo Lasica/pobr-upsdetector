@@ -32,11 +32,11 @@ public:
     double stdev[N_COEFFICIENTS];
     float weights[N_COEFFICIENTS];
     //weights
-    double get_distance(Segment s);
+    double get_distance(Segment &s);
     void load();
 };
 
-double Shape::get_distance(Segment s) {
+double Shape::get_distance(Segment &s) {
     double dist = 0;
     for(int i=0; i<N_COEFFICIENTS; ++i) {
         double normalized = (s.getIMCoeff(i)-mean[i])/stdev[i];
@@ -159,26 +159,28 @@ int main(int argc, char **argv) {
         cout << endl;
     }
     
-    for( auto &s : segments ) {
-        if(display_source) cout << basename << " " << k++ << " ";
-        if(debug) cout << s << endl;
-        if(debug) {
-            cout << "Basic moments: " << endl;
-            for (int l = 0; l < 4; ++l) {
-                for (int j = 0; j < 4; ++j)
-                    cout <<  s.m[l][j] <<  " ";
-            } cout <<  endl;
+    if( !detect) {
+        for( auto &s : segments ) {
+            if(display_source) cout << basename << " " << k++ << " ";
+            if(debug) cout << s << endl;
+            if(debug) {
+                cout << "Basic moments: " << endl;
+                for (int l = 0; l < 4; ++l) {
+                    for (int j = 0; j < 4; ++j)
+                        cout <<  s.m[l][j] <<  " ";
+                } cout <<  endl;
+            }
+            if(display_central) {
+                s.updateMomentsCentralMoments();
+                if(debug) cout << "Central moments: \n";
+                for (int i=0; i<central_moments_num; ++i)
+                    cout  << s.M[a[i]][b[i]] << " ";
+            }
+            if(debug) cout << " Invariants: " << endl;
+            for(int i=0; i<N_COEFFICIENTS; ++i)
+                cout  << s.getIMCoeff(i) << " ";
+            cout << endl;
         }
-        if(display_central) {
-            s.updateMomentsCentralMoments();
-            if(debug) cout << "Central moments: \n";
-            for (int i=0; i<central_moments_num; ++i)
-                cout  << s.M[a[i]][b[i]] << " ";
-        }
-        if(debug) cout << " Invariants: " << endl;
-        for(int i=0; i<N_COEFFICIENTS; ++i)
-            cout  << s.getIMCoeff(i) << " ";
-        cout << endl;
     }
     
     // Comparison with library implementation
@@ -204,10 +206,31 @@ int main(int argc, char **argv) {
         for(int i=0; i<N_SHAPES; ++i) {
             shp[i].name = shapes[i];
             shp[i].load();
-            cout << shp[i].name << endl;
-            for(int j=0; j<N_COEFFICIENTS; ++j) {
-                cout << shp[i].mean[j] << " " << shp[i].stdev[j] << " " << shp[i].weights[j] << endl;
+            if(debug) {
+                cout << shp[i].name << endl;
+                for(int j=0; j<N_COEFFICIENTS; ++j) {
+                    cout << shp[i].mean[j] << " " << shp[i].stdev[j] << " " << shp[i].weights[j] << endl;
+                }
             }
+        }
+        for (int i=0; i<N_SHAPES; ++i) {
+            vector<pair<double, Segment*> > order;
+            for ( auto &a : segments) {
+                order.push_back(make_pair(shp[i].get_distance(a), &a));
+            }
+            std::sort(order.begin(), order.end());
+            cout << "Minimal " << shp[i].name << " distance = " << order[0].first << endl;
+            if(debug) {
+                cout << "Least distance 3 samples:\n";
+                for(int k=0; k<3; ++k) {
+                    cout << order[k].first << " ";
+                    for(int j=0; j<N_COEFFICIENTS; ++j) {
+                        cout << order[k].second->getIMCoeff(j) << " ";
+                    } 
+                    cout << endl;
+                }
+            }
+            
         }
     }
     
