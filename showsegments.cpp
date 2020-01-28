@@ -40,7 +40,7 @@ double Shape::get_distance(Segment &s) {
     double dist = 0;
     for(int i=0; i<N_COEFFICIENTS; ++i) {
         double normalized = (s.getIMCoeff(i)-mean[i])/stdev[i];
-        dist += weights[i] * normalized * normalized;
+        dist += weights[i] * abs(normalized);
     }
     return dist;
 }
@@ -225,7 +225,7 @@ int main(int argc, char **argv) {
                 for(int k=0; k<3; ++k) {
                     cout << order[k].first << " ";
                     for(int j=0; j<N_COEFFICIENTS; ++j) {
-                        cout << order[k].second->getIMCoeff(j) << " ";
+                        cout << std::setprecision(2) << order[k].second->getIMCoeff(j) << " ";
                     } 
                     cout << endl;
                 }
